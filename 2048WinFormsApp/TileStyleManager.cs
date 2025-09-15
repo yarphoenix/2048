@@ -9,7 +9,7 @@ public static class TileStyleManager
 
     private static readonly Color EmptyBackground = ColorTranslator.FromHtml("#EFE9E2");
 
-    public static readonly Font DefaultFont = new Font("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
+    public static readonly Font DefaultFont = new("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
 
     private static readonly Dictionary<float, Font> FontCache = new();
 
