@@ -73,7 +73,7 @@ public partial class GameForm : Form
 
         int idx = _random.Next(empty.Count);
         (int row, int col) = empty[idx];
-        _board[row, col] = _random.NextDouble() < 0.9 ? 2 : 4;
+        _board[row, col] = _random.NextDouble() < 0.75 ? 2 : 4;
     }
 
     private void ShowScore() => ScoreLabel.Text = _score.ToString();
