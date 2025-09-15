@@ -21,10 +21,10 @@ public static class TileStyleManager
     /// <summary>
     /// Применить стиль к Label. Можно передать baseFont (рекомендуется переиспользовать шрифт из формы).
     /// </summary>
-    public static void ApplyStyle(Label lbl, int? value, Font baseFont = null)
+    public static void ApplyStyle(Label lbl, int? value, Font? baseFont = null)
     {
         if (lbl == null) return;
-        Font fontToUse = baseFont ?? DefaultFont;
+        var fontToUse = baseFont ?? DefaultFont;
 
         if (!value.HasValue)
         {
@@ -89,9 +89,9 @@ public static class TileStyleManager
     private static Color LerpColor(Color a, Color b, double t)
     {
         t = Math.Clamp(t, 0.0, 1.0);
-        int r = (int)Math.Round(a.R + (b.R - a.R) * t);
-        int g = (int)Math.Round(a.G + (b.G - a.G) * t);
-        int bl = (int)Math.Round(a.B + (b.B - a.B) * t);
+        var r = (int)Math.Round(a.R + (b.R - a.R) * t);
+        var g = (int)Math.Round(a.G + (b.G - a.G) * t);
+        var bl = (int)Math.Round(a.B + (b.B - a.B) * t);
         return Color.FromArgb(r, g, bl);
     }
 
