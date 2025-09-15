@@ -80,9 +80,15 @@ public partial class GameForm : Form
 
     private void UpdateUI()
     {
-        for (int r = 0; r < MapSize; r++)
-            for (int c = 0; c < MapSize; c++)
-                _labelsMap[r, c].Text = _board[r, c]?.ToString() ?? string.Empty;
+        for (var r = 0; r < MapSize; r++)
+        {
+            for (var c = 0; c < MapSize; c++)
+            {
+                var lbl = _labelsMap[r, c];
+                int? val = _board[r, c];
+                TileStyleManager.ApplyStyle(lbl, val, ScoreLabel.Font);
+            }
+        }
     }
 
     private void GameForm_KeyDown(object sender, KeyEventArgs e)
