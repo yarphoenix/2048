@@ -3,273 +3,190 @@
 public partial class GameForm : Form
 {
     private const int MapSize = 4;
-
     private readonly Random _random;
     private Label[,] _labelsMap;
+    private int?[,] _board;
     private int _score;
 
-    public GameForm() : this(null)
-    {
-    }
+    private static readonly Font CellFont = new Font("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
+    private const int CellSize = 100;
+    private const int Gap = 7;
+
+    private enum Direction { Left, Right, Up, Down }
+
+    public GameForm() : this(null) { }
 
     public GameForm(int? seed)
     {
         InitializeComponent();
+        KeyPreview = true;
         _random = seed.HasValue ? new Random(seed.Value) : new Random();
     }
 
     private void GameForm_Load(object sender, EventArgs e)
     {
+        InitBoard();
         InitMap();
+        // стандартно - можно сгенерировать 1 или 2 плитки; здесь — 1, но легко поменять
         GenerateNumber();
         ShowScore();
+        UpdateUI();
     }
 
-    private void ShowScore()
+    private void InitBoard()
     {
-        ScoreLabel.Text = _score.ToString();
+        _board = new int?[MapSize, MapSize];
+        _score = 0;
     }
 
     private void InitMap()
     {
         _labelsMap = new Label[MapSize, MapSize];
 
-        for (var i = 0; i < MapSize; i++)
+        for (var r = 0; r < MapSize; r++)
         {
-            for (var j = 0; j < MapSize; j++)
+            for (var c = 0; c < MapSize; c++)
             {
-                var newLabel = CreateLabel(i, j);
-                Controls.Add(newLabel);
-                _labelsMap[i, j] = newLabel;
+                var lbl = new Label
+                {
+                    BackColor = Color.Silver,
+                    Font = CellFont,
+                    Size = new Size(CellSize, CellSize),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                };
+                lbl.Location = new Point(10 + c * (CellSize + Gap), 40 + r * (CellSize + Gap));
+                Controls.Add(lbl);
+                _labelsMap[r, c] = lbl;
             }
         }
     }
 
     private void GenerateNumber()
     {
-        var emptyCells = new List<(int Row, int Col)>();
+        var empty = new List<(int r, int c)>();
+        for (int r = 0; r < MapSize; r++)
+            for (int c = 0; c < MapSize; c++)
+                if (!_board[r, c].HasValue)
+                    empty.Add((r, c));
 
-        for (var r = 0; r < MapSize; r++)
-        {
-            for (var c = 0; c < MapSize; c++)
-            {
-                if (string.IsNullOrEmpty(_labelsMap[r, c].Text))
-                {
-                    emptyCells.Add((r, c));
-                }
-            }
-        }
+        if (empty.Count == 0) return;
 
-        if (emptyCells.Count == 0)
-        {
-            return;
-        }
-
-        int chosenIndex = _random.Next(emptyCells.Count);
-        var (row, column) = emptyCells[chosenIndex];
-
-        int value = _random.NextDouble() < 0.9 ? 2 : 4;
-        _labelsMap[row, column].Text = value.ToString();
+        int idx = _random.Next(empty.Count);
+        (int row, int col) = empty[idx];
+        _board[row, col] = _random.NextDouble() < 0.9 ? 2 : 4;
     }
 
-    private static Label CreateLabel(int row, int column)
-    {
-        var label = new Label();
-        label.BackColor = Color.Silver;
-        label.Font = new Font("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
-        label.Size = new Size(100, 100);
-        label.TextAlign = ContentAlignment.MiddleCenter;
-        int x = 10 + column * 107;
-        int y = 40 + row * 107;
-        label.Location = new Point(x, y);
+    private void ShowScore() => ScoreLabel.Text = _score.ToString();
 
-        return label;
+    private void UpdateUI()
+    {
+        for (int r = 0; r < MapSize; r++)
+            for (int c = 0; c < MapSize; c++)
+                _labelsMap[r, c].Text = _board[r, c]?.ToString() ?? string.Empty;
     }
 
     private void GameForm_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.KeyCode is Keys.Right or Keys.D)
+        Direction? dir = e.KeyCode switch
         {
-            for (var i = 0; i < MapSize; i++)
-            {
-                for (int j = MapSize - 1; j >= 0; j--)
-                {
-                    if (!string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = j - 1; k >= 0; k--)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[i, k].Text))
-                            {
-                                if (_labelsMap[i, j].Text == _labelsMap[i, k].Text)
-                                {
-                                    int newValue = int.Parse(_labelsMap[i, j].Text) * 2;
-                                    _score += newValue;
-                                    _labelsMap[i, j].Text = newValue.ToString();
-                                    _labelsMap[i, k].Text = string.Empty;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            Keys.Left or Keys.A => Direction.Left,
+            Keys.Right or Keys.D => Direction.Right,
+            Keys.Up or Keys.W => Direction.Up,
+            Keys.Down or Keys.S => Direction.Down,
+            _ => null
+        };
 
-            for (var i = 0; i < MapSize; i++)
-            {
-                for (int j = MapSize - 1; j >= 0; j--)
-                {
-                    if (string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = j - 1; k >= 0; k--)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[i, k].Text))
-                            {
-                                _labelsMap[i, j].Text = _labelsMap[i, k].Text;
-                                _labelsMap[i, k].Text = string.Empty;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+        if (!dir.HasValue) return;
+
+        bool moved = Move(dir.Value);
+        if (moved)
+        {
+            GenerateNumber();
+            UpdateUI();
+            ShowScore();
         }
-        if (e.KeyCode is Keys.Up or Keys.W)
+    }
+
+    /// <summary>
+    /// Универсальный двигатель: извлекает линию в правильном порядке, делает slide+merge, записывает назад.
+    /// Возвращает true если произошли изменения.
+    /// </summary>
+    private new bool Move(Direction dir)
+    {
+        var moved = false;
+
+        for (var index = 0; index < MapSize; index++)
         {
-            for (var j = 0; j < MapSize; j++)
-            { 
-                for (var i = 0; i < MapSize; i++)
+            var line = new int?[MapSize];
+            for (var pos = 0; pos < MapSize; pos++)
+            {
+                line[pos] = dir switch
                 {
-                    if (!string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = i + 1; k < MapSize; k++)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[k, j].Text))
-                            {
-                                if (_labelsMap[i, j].Text == _labelsMap[k, j].Text)
-                                {
-                                    int newValue = int.Parse(_labelsMap[i, j].Text) * 2;
-                                    _score += newValue;
-                                    _labelsMap[i, j].Text = newValue.ToString();
-                                    _labelsMap[k, j].Text = string.Empty;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
+                    Direction.Left => _board[index, pos],
+                    Direction.Right => _board[index, MapSize - 1 - pos],
+                    Direction.Up => _board[pos, index],
+                    Direction.Down => _board[MapSize - 1 - pos, index],
+                    _ => line[pos]
+                };
             }
 
-            for (var j = 0; j < MapSize; j++)
-            {
-                for (var i = 0; i < MapSize; i++)
-                {
-                    if (string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = i + 1; k < MapSize; k++)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[k, j].Text))
-                            {
-                                _labelsMap[i, j].Text = _labelsMap[k, j].Text;
-                                _labelsMap[k, j].Text = string.Empty;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (e.KeyCode is Keys.Left or Keys.A)
-        {
-            for (var i = 0; i < MapSize; i++)
-            {
-                for (var j = 0; j < MapSize; j++)
-                {
-                    if (!string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = j + 1; k < MapSize; k++)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[i, k].Text))
-                            {
-                                if (_labelsMap[i, j].Text == _labelsMap[i, k].Text)
-                                {
-                                    int newValue = int.Parse(_labelsMap[i, j].Text) * 2;
-                                    _score += newValue;
-                                    _labelsMap[i, j].Text = newValue.ToString();
-                                    _labelsMap[i, k].Text = string.Empty;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            (int?[] newLine, int gained) = SlideAndMergeLine(line);
+            if (gained > 0) _score += gained;
 
-            for (var i = 0; i < MapSize; i++)
+            for (var pos = 0; pos < MapSize; pos++)
             {
-                for (var j = 0; j < MapSize; j++)
+                int r, c;
+                switch (dir)
                 {
-                    if (string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = j + 1; k < MapSize; k++)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[i, k].Text))
-                            {
-                                _labelsMap[i, j].Text = _labelsMap[i, k].Text;
-                                _labelsMap[i, k].Text = string.Empty;
-                                break;
-                            }
-                        }
-                    }
+                    case Direction.Left:
+                        r = index; c = pos; break;
+                    case Direction.Right:
+                        r = index; c = MapSize - 1 - pos; break;
+                    case Direction.Up:
+                        r = pos; c = index; break;
+                    case Direction.Down:
+                    default:
+                        r = MapSize - 1 - pos; c = index; break;
                 }
-            }
-        }
-        if (e.KeyCode is Keys.Down or Keys.S)
-        {
-            for (var j = 0; j < MapSize; j++)
-            {
-                for (int i = MapSize - 1; i >= 0; i--)
-                {
-                    if (!string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = i - 1; k >= 0; k--)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[k, j].Text))
-                            {
-                                if (_labelsMap[i, j].Text == _labelsMap[k, j].Text)
-                                {
-                                    int newValue = int.Parse(_labelsMap[i, j].Text) * 2;
-                                    _score += newValue;
-                                    _labelsMap[i, j].Text = newValue.ToString();
-                                    _labelsMap[k, j].Text = string.Empty;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
 
-            for (var j = 0; j < MapSize; j++)
-            {
-                for (int i = MapSize - 1; i >= 0; i--)
+                if (_board[r, c] != newLine[pos])
                 {
-                    if (string.IsNullOrEmpty(_labelsMap[i, j].Text))
-                    {
-                        for (int k = i - 1; k >= 0; k--)
-                        {
-                            if (!string.IsNullOrEmpty(_labelsMap[k, j].Text))
-                            {
-                                _labelsMap[i, j].Text = _labelsMap[k, j].Text;
-                                _labelsMap[k, j].Text = string.Empty;
-                                break;
-                            }
-                        }
-                    }
+                    moved = true;
                 }
+                _board[r, c] = newLine[pos];
             }
         }
 
-        GenerateNumber();
-        ShowScore();
+        return moved;
+    }
+
+    /// <summary>
+    /// Выполняет сдвиг влево и объединение на одномерной линии.
+    /// Возвращает новую линию и сумму очков, полученных на этом слиянии.
+    /// </summary>
+    private static (int?[] NewLine, int ScoreGained) SlideAndMergeLine(int?[] line)
+    {
+        var compact = line.Where(x => x.HasValue).Select(x => x!.Value).ToList();
+        var result = new List<int?>(MapSize);
+        var gained = 0;
+
+        for (var i = 0; i < compact.Count; i++)
+        {
+            if (i + 1 < compact.Count && compact[i] == compact[i + 1])
+            {
+                int merged = compact[i] * 2;
+                result.Add(merged);
+                gained += merged;
+                i++;
+            }
+            else
+            {
+                result.Add(compact[i]);
+            }
+        }
+
+        while (result.Count < MapSize) result.Add(null);
+
+        return (result.ToArray(), gained);
     }
 }
