@@ -64,8 +64,8 @@ public partial class GameForm : Form
     private void GenerateNumber()
     {
         var empty = new List<(int r, int c)>();
-        for (int r = 0; r < MapSize; r++)
-            for (int c = 0; c < MapSize; c++)
+        for (var r = 0; r < MapSize; r++)
+            for (var c = 0; c < MapSize; c++)
                 if (!_board[r, c].HasValue)
                     empty.Add((r, c));
 
@@ -110,6 +110,13 @@ public partial class GameForm : Form
             GenerateNumber();
             UpdateUI();
             ShowScore();
+        }
+
+        if (IsGameOver())
+        {
+            // заглушка, можно потом сделать по-красивее
+            var result = MessageBox.Show("Игра окончена! Хотите начать заново?",
+                "Game Over");
         }
     }
 
@@ -194,5 +201,33 @@ public partial class GameForm : Form
         while (result.Count < MapSize) result.Add(null);
 
         return (result.ToArray(), gained);
+    }
+
+    private bool IsGameOver()
+    {
+        for (var r = 0; r < MapSize; r++)
+        {
+            for (var c = 0; c < MapSize; c++)
+            {
+                if (string.IsNullOrEmpty(_labelsMap[r, c].Text))
+                    return false;
+            }
+        }
+
+        for (var r = 0; r < MapSize; r++)
+        {
+            for (var c = 0; c < MapSize; c++)
+            {
+                string value = _labelsMap[r, c].Text;
+
+                if (c < MapSize - 1 && value == _labelsMap[r, c + 1].Text)
+                    return false;
+
+                if (r < MapSize - 1 && value == _labelsMap[r + 1, c].Text)
+                    return false;
+            }
+        }
+
+        return true;
     }
 }
