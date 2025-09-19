@@ -9,7 +9,7 @@ namespace _2048WinFormsApp
         private static void Main()
         {
             ApplicationConfiguration.Initialize();
-            Application.Run(new GameForm());
+            Application.Run(new MainMenuForm());
         }
     }
 }

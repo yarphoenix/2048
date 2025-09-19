@@ -8,7 +8,7 @@ public partial class GameForm : Form
     private int?[,] _board;
     private int _score;
 
-    private static readonly Font CellFont = new Font("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
+    private static readonly Font CellFont = new("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
     private const int CellSize = 100;
     private const int Gap = 7;
 
