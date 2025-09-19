@@ -28,19 +28,38 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameForm));
+            ScoreTextLabel = new Label();
+            ScoreLabel = new Label();
             SuspendLayout();
+            // 
+            // ScoreTextLabel
+            // 
+            resources.ApplyResources(ScoreTextLabel, "ScoreTextLabel");
+            ScoreTextLabel.Name = "ScoreTextLabel";
+            // 
+            // ScoreLabel
+            // 
+            resources.ApplyResources(ScoreLabel, "ScoreLabel");
+            ScoreLabel.Name = "ScoreLabel";
             // 
             // GameForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            resources.ApplyResources(this, "$this");
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(439, 445);
+            BackColor = SystemColors.Control;
+            Controls.Add(ScoreLabel);
+            Controls.Add(ScoreTextLabel);
             Name = "GameForm";
-            Text = "GameForm";
             Load += GameForm_Load;
+            KeyDown += GameForm_KeyDown;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private Label ScoreTextLabel;
+        private Label ScoreLabel;
     }
 }
