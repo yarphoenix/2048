@@ -40,6 +40,8 @@ public partial class MainMenuForm : Form
 
     private void ShowUsersResultsButton_Click(object sender, EventArgs e)
     {
+        var resultsForm = new ResultsForm();
+        resultsForm.ShowDialog();
     }
 
     private void QuitButton_Click(object sender, EventArgs e)

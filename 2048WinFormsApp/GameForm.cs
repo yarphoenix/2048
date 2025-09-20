@@ -113,8 +113,10 @@ public partial class GameForm : Form
 
         if (IsGameOver())
         {
+            UsersResultStorage.Append(_user);
+
             // заглушка, можно потом сделать по-красивее
-            var result = MessageBox.Show("Игра окончена! Хотите начать заново?",
+            MessageBox.Show("Игра окончена! Хотите начать заново?",
                 "Game Over");
         }
     }

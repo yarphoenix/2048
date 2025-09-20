@@ -71,6 +71,7 @@
             Controls.Add(ResultsGridView);
             Name = "ResultsForm";
             Text = "2048 | История результатов";
+            Load += ResultsForm_Load;
             ((System.ComponentModel.ISupportInitialize)ResultsGridView).EndInit();
             ResumeLayout(false);
         }
