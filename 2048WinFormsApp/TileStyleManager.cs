@@ -2,6 +2,12 @@
 
 public static class TileStyleManager
 {
+    // Параметры нормализации экспоненты
+    // minExp = 1 (2^1 = 2), maxExp = 11 (2^11 = 2048)
+    private const int MinExp = 1;
+
+    private const int MaxExp = 11;
+
     // Основные опорные цвета (пастельный светлый -> красный -> чёрный)
     private static readonly Color LightPastel = ColorTranslator.FromHtml("#FFF6F5"); // очень светлый тёплый фон
     private static readonly Color MidRed = ColorTranslator.FromHtml("#FF6B6B"); // насыщенный, но не кричащий красный
@@ -13,13 +19,8 @@ public static class TileStyleManager
 
     private static readonly Dictionary<float, Font> FontCache = new();
 
-    // Параметры нормализации экспоненты
-    // minExp = 1 (2^1 = 2), maxExp = 11 (2^11 = 2048)
-    private const int MinExp = 1;
-    private const int MaxExp = 11;
-
     /// <summary>
-    /// Применить стиль к Label. Можно передать baseFont (рекомендуется переиспользовать шрифт из формы).
+    ///     Применить стиль к Label. Можно передать baseFont (рекомендуется переиспользовать шрифт из формы).
     /// </summary>
     public static void ApplyStyle(Label lbl, int? value, Font? baseFont = null)
     {
@@ -97,7 +98,7 @@ public static class TileStyleManager
 
     private static Color GetReadableTextColor(Color bg)
     {
-        double luminance = (0.299 * bg.R + 0.587 * bg.G + 0.114 * bg.B);
+        double luminance = 0.299 * bg.R + 0.587 * bg.G + 0.114 * bg.B;
         return luminance > 150 ? ColorTranslator.FromHtml("#2B2B2B") : Color.White;
     }
 
@@ -117,10 +118,7 @@ public static class TileStyleManager
     private static Font GetOrAddFont(FontFamily family, FontStyle style, float size)
     {
         float keySize = (float)Math.Round(size * 4f) / 2f;
-        if (FontCache.TryGetValue(keySize, out var cached))
-        {
-            return cached;
-        }
+        if (FontCache.TryGetValue(keySize, out var cached)) return cached;
 
         var f = new Font(family, keySize, style);
         FontCache[keySize] = f;

@@ -70,9 +70,9 @@
             // 
             // StartGameButton
             // 
-            StartGameButton.Location = new Point(219, 124);
+            StartGameButton.Location = new Point(229, 125);
             StartGameButton.Name = "StartGameButton";
-            StartGameButton.Size = new Size(211, 30);
+            StartGameButton.Size = new Size(195, 30);
             StartGameButton.TabIndex = 3;
             StartGameButton.Text = "Начать игру";
             StartGameButton.UseVisualStyleBackColor = true;
