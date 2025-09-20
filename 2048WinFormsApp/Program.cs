@@ -1,15 +1,14 @@
-namespace _2048WinFormsApp
+namespace _2048WinFormsApp;
+
+internal static class Program
 {
-    internal static class Program
+    /// <summary>
+    ///     The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    private static void Main()
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static void Main()
-        {
-            ApplicationConfiguration.Initialize();
-            Application.Run(new GameForm());
-        }
+        ApplicationConfiguration.Initialize();
+        Application.Run(new MainMenuForm());
     }
 }
