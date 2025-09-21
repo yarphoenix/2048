@@ -51,5 +51,7 @@ public partial class MainMenuForm : Form
 
     private void ShowRulesButton_Click(object sender, EventArgs e)
     {
+        var rulesForm = new RulesForm();
+        rulesForm.ShowDialog();
     }
 }

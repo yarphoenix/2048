@@ -59,5 +59,35 @@ namespace _2048WinFormsApp.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap photo_2025_09_21_00_37_47 {
+            get {
+                object obj = ResourceManager.GetObject("photo_2025-09-21_00-37-47", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap photo_2025_09_21_02_03_48 {
+            get {
+                object obj = ResourceManager.GetObject("photo_2025-09-21_02-03-48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap photo_2025_09_21_18_31_09 {
+            get {
+                object obj = ResourceManager.GetObject("photo_2025-09-21_18-31-09", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
