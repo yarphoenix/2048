@@ -52,9 +52,10 @@
             // UnderliningLabel
             // 
             UnderliningLabel.AutoSize = true;
+            UnderliningLabel.Font = new Font("Segoe UI", 10F);
             UnderliningLabel.Location = new Point(130, 92);
             UnderliningLabel.Name = "UnderliningLabel";
-            UnderliningLabel.Size = new Size(432, 15);
+            UnderliningLabel.Size = new Size(519, 19);
             UnderliningLabel.TabIndex = 1;
             UnderliningLabel.Text = "_____________________________________________________________________________________";
             // 
