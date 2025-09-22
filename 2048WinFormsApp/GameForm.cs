@@ -1,237 +1,167 @@
-﻿using _2048ClassLibrary;
+﻿using _2048ClassLibrary.GameEngine;
 
-namespace _2048WinFormsApp;
-
-public partial class GameForm : Form
+namespace _2048WinFormsApp
 {
-    private const int MapSize = 4;
-    private const int CellSize = 100;
-    private const int Gap = 7;
-
-    private static readonly Font CellFont = new("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
-    private readonly Random _random;
-    private int?[,] _board;
-    private Label[,] _labelsMap;
-    private readonly User _user = new();
-
-    public GameForm() : this(null)
-    { }
-
-    public GameForm(int? seed)
+    public partial class GameForm : Form
     {
-        InitializeComponent();
-        KeyPreview = true;
-        _random = seed.HasValue ? new Random(seed.Value) : new Random();
-    }
+        private const int CellSize = 100;
+        private const int Gap = 7;
 
-    private void GameForm_Load(object sender, EventArgs e)
-    {
-        InitBoard();
-        InitMap();
-        // стандартно - можно сгенерировать 1 или 2 плитки; здесь — 1, но легко поменять
-        GenerateNumber();
-        ShowScore();
-        UpdateUI();
-    }
+        private readonly GameEngine _game;
 
-    private void InitBoard()
-    {
-        _board = new int?[MapSize, MapSize];
-    }
+        private static readonly Font CellFont = new("Yu Gothic UI Semibold", 20F, FontStyle.Bold);
+        private Label[,] _labelsMap = null!;
 
-    private void InitMap()
-    {
-        _labelsMap = new Label[MapSize, MapSize];
-
-        for (var r = 0; r < MapSize; r++)
-        for (var c = 0; c < MapSize; c++)
+        public GameForm()
         {
-            var lbl = new Label
-            {
-                BackColor = Color.Silver,
-                Font = CellFont,
-                Size = new Size(CellSize, CellSize),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            lbl.Location = new Point(10 + c * (CellSize + Gap), 40 + r * (CellSize + Gap));
-            Controls.Add(lbl);
-            _labelsMap[r, c] = lbl;
-        }
-    }
+            InitializeComponent();
 
-    private void GenerateNumber()
-    {
-        var empty = new List<(int r, int c)>();
-        for (var r = 0; r < MapSize; r++)
-        for (var c = 0; c < MapSize; c++)
-            if (!_board[r, c].HasValue)
-                empty.Add((r, c));
+            _game = new GameEngine();
 
-        if (empty.Count == 0) return;
+            _game.BoardChanged += Game_BoardChanged;
+            _game.ScoreChanged += Game_ScoreChanged;
+            _game.GameOver += Game_GameOver;
 
-        int idx = _random.Next(empty.Count);
-        (int row, int col) = empty[idx];
-        _board[row, col] = _random.NextDouble() < 0.75 ? 2 : 4;
-    }
-
-    private void ShowScore()
-    {
-        ScoreLabel.Text = _user.Score.ToString();
-    }
-
-    private void UpdateUI()
-    {
-        for (var r = 0; r < MapSize; r++)
-        for (var c = 0; c < MapSize; c++)
-        {
-            var lbl = _labelsMap[r, c];
-            int? val = _board[r, c];
-            TileStyleManager.ApplyStyle(lbl, val, ScoreLabel.Font);
-        }
-    }
-
-    private void GameForm_KeyDown(object sender, KeyEventArgs e)
-    {
-        Direction? dir = e.KeyCode switch
-        {
-            Keys.Left or Keys.A => Direction.Left,
-            Keys.Right or Keys.D => Direction.Right,
-            Keys.Up or Keys.W => Direction.Up,
-            Keys.Down or Keys.S => Direction.Down,
-            _ => null
-        };
-
-        if (!dir.HasValue) return;
-
-        bool moved = Move(dir.Value);
-        if (moved)
-        {
-            GenerateNumber();
-            UpdateUI();
-            ShowScore();
+            //// разрешаем форме получать нажатия клавиш
+            //KeyPreview = true;
         }
 
-        if (IsGameOver())
+        private void GameForm_Load(object sender, EventArgs e)
         {
-            UsersResultStorage.Append(_user);
+            InitMap();
 
-            // заглушка, можно потом сделать по-красивее
-            MessageBox.Show("Игра окончена! Хотите начать заново?",
-                "Game Over");
+            // отрисовать начальное состояние из движка
+            UpdateUIFromBoard(_game.GetBoardCopy());
+
+            // показать начальный счёт
+            ScoreLabel.Text = _game.User.Score.ToString();
         }
-    }
 
-    /// <summary>
-    ///     Универсальный двигатель: извлекает линию в правильном порядке, делает slide+merge, записывает назад.
-    ///     Возвращает true если произошли изменения.
-    /// </summary>
-    private new bool Move(Direction dir)
-    {
-        var moved = false;
-
-        for (var index = 0; index < MapSize; index++)
+        private void InitMap()
         {
-            var line = new int?[MapSize];
-            for (var pos = 0; pos < MapSize; pos++)
-                line[pos] = dir switch
+            _labelsMap = new Label[GameEngine.MapSize, GameEngine.MapSize];
+
+            for (var r = 0; r < GameEngine.MapSize; r++)
+                for (var c = 0; c < GameEngine.MapSize; c++)
                 {
-                    Direction.Left => _board[index, pos],
-                    Direction.Right => _board[index, MapSize - 1 - pos],
-                    Direction.Up => _board[pos, index],
-                    Direction.Down => _board[MapSize - 1 - pos, index],
-                    _ => line[pos]
-                };
-
-            (int?[] newLine, int gained) = SlideAndMergeLine(line);
-            if (gained > 0) _user.AddScore(gained);
-
-            for (var pos = 0; pos < MapSize; pos++)
-            {
-                int r, c;
-                switch (dir)
-                {
-                    case Direction.Left:
-                        r = index;
-                        c = pos;
-                        break;
-                    case Direction.Right:
-                        r = index;
-                        c = MapSize - 1 - pos;
-                        break;
-                    case Direction.Up:
-                        r = pos;
-                        c = index;
-                        break;
-                    case Direction.Down:
-                    default:
-                        r = MapSize - 1 - pos;
-                        c = index;
-                        break;
+                    var lbl = new Label
+                    {
+                        BackColor = Color.Silver,
+                        Font = CellFont,
+                        Size = new Size(CellSize, CellSize),
+                        TextAlign = ContentAlignment.MiddleCenter
+                    };
+                    lbl.Location = new Point(10 + c * (CellSize + Gap), 40 + r * (CellSize + Gap));
+                    Controls.Add(lbl);
+                    _labelsMap[r, c] = lbl;
                 }
+        }
 
-                if (_board[r, c] != newLine[pos]) moved = true;
-                _board[r, c] = newLine[pos];
+        private void GameForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            GameEngine.Direction? dir = e.KeyCode switch
+            {
+                Keys.Left or Keys.A => GameEngine.Direction.Left,
+                Keys.Right or Keys.D => GameEngine.Direction.Right,
+                Keys.Up or Keys.W => GameEngine.Direction.Up,
+                Keys.Down or Keys.S => GameEngine.Direction.Down,
+                _ => null
+            };
+
+            if (!dir.HasValue) return;
+
+            bool moved = _game.Move(dir.Value);
+            if (moved)
+            {
+                // после успешного хода — сгенерировать новую плитку;
+                // GenerateNumber отправит событие BoardChanged и при необходимости GameOver.
+                _game.GenerateNumber();
             }
         }
 
-        return moved;
-    }
+        #region Обработчики событий GameEngine
 
-    /// <summary>
-    ///     Выполняет сдвиг влево и объединение на одномерной линии.
-    ///     Возвращает новую линию и сумму очков, полученных на этом слиянии.
-    /// </summary>
-    private static (int?[] NewLine, int ScoreGained) SlideAndMergeLine(int?[] line)
-    {
-        var compact = line.Where(x => x.HasValue).Select(x => x!.Value).ToList();
-        var result = new List<int?>(MapSize);
-        var gained = 0;
-
-        for (var i = 0; i < compact.Count; i++)
-            if (i + 1 < compact.Count && compact[i] == compact[i + 1])
+        private void Game_BoardChanged(object? sender, BoardChangedEventArgs e)
+        {
+            if (InvokeRequired)
             {
-                int merged = compact[i] * 2;
-                result.Add(merged);
-                gained += merged;
-                i++;
+                Invoke((Action)(() => UpdateUIFromBoard(e.Board)));
             }
             else
             {
-                result.Add(compact[i]);
+                UpdateUIFromBoard(e.Board);
             }
-
-        while (result.Count < MapSize) result.Add(null);
-
-        return (result.ToArray(), gained);
-    }
-
-    private bool IsGameOver()
-    {
-        for (var r = 0; r < MapSize; r++)
-        for (var c = 0; c < MapSize; c++)
-            if (string.IsNullOrEmpty(_labelsMap[r, c].Text))
-                return false;
-
-        for (var r = 0; r < MapSize; r++)
-        for (var c = 0; c < MapSize; c++)
-        {
-            string value = _labelsMap[r, c].Text;
-
-            if (c < MapSize - 1 && value == _labelsMap[r, c + 1].Text)
-                return false;
-
-            if (r < MapSize - 1 && value == _labelsMap[r + 1, c].Text)
-                return false;
         }
 
-        return true;
-    }
+        private void Game_ScoreChanged(object? sender, ScoreChangedEventArgs e)
+        {
+            if (InvokeRequired)
+            {
+                Invoke((Action)(() => ScoreLabel.Text = e.NewScore.ToString()));
+            }
+            else
+            {
+                ScoreLabel.Text = e.NewScore.ToString();
+            }
+        }
 
-    private enum Direction
-    {
-        Left,
-        Right,
-        Up,
-        Down
+        private void Game_GameOver(object? sender, GameOverEventArgs e)
+        {
+            // В GUI-потоке покажем диалог и при желании перезапустим игру
+            if (InvokeRequired)
+            {
+                Invoke((Action)(() => HandleGameOver(e.FinalScore)));
+            }
+            else
+            {
+                HandleGameOver(e.FinalScore);
+            }
+        }
+
+        private void HandleGameOver(int finalScore)
+        {
+            var result = MessageBox.Show(
+                $"""
+                 Игра окончена! Счёт: {finalScore}
+                 Хотите начать заново?
+                 """,
+                @"Game Over",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                _game.Reset();
+                // Reset вызовет события BoardChanged и ScoreChanged — UI обновится автоматически.
+            }
+            else
+            {
+                // если пользователь не хочет рестарт — можно, например, заблокировать ввод
+                // или просто оставить всё как есть. Здесь ничего дополнительно не делаем.
+            }
+        }
+
+        #endregion
+
+        private void UpdateUIFromBoard(int?[,] board)
+        {
+            for (var r = 0; r < GameEngine.MapSize; r++)
+                for (var c = 0; c < GameEngine.MapSize; c++)
+                {
+                    int? val = board[r, c];
+                    var lbl = _labelsMap[r, c];
+                    TileStyleManager.ApplyStyle(lbl, val, ScoreLabel.Font);
+                }
+        }
+
+        // Отписка от событий при закрытии формы
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            _game.BoardChanged -= Game_BoardChanged;
+            _game.ScoreChanged -= Game_ScoreChanged;
+            _game.GameOver -= Game_GameOver;
+        }
     }
 }
