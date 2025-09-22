@@ -14,7 +14,7 @@ public partial class ResultsForm : Form
         var results = UsersResultStorage.GetUserResults();
         foreach (var result in results)
         {
-            ResultsGridView.Rows.Add(result.Name, result.Score);
+            ResultsGridView.Rows.Add(result.PlayerName, result.Score);
         }
     }
 }
