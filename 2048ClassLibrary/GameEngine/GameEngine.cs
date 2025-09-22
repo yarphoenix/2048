@@ -14,19 +14,14 @@ public sealed class GameEngine
         User = new User();
 
         InitBoard();
-        // Стандартно начинают с двух плиток
+        // Стандартно с двух плиток
         GenerateNumber();
         GenerateNumber();
     }
 
     private void InitBoard()
     {
-        //_board = new int?[MapSize, MapSize];
-
-        _board = new int?[,] { { 2, 4, 8, 16 },
-            { 32, 64, 128, 256 }, 
-            { 512, 1024, 2048, 2048 * 2 },
-            { 2048 * 2 * 2, 2048 * 2 * 2 * 2, 1024, 1024 } };
+        _board = new int?[MapSize, MapSize];
     }
 
     /// <summary>
@@ -61,12 +56,10 @@ public sealed class GameEngine
 
         int idx = _random.Next(empty.Count);
         (int row, int col) = empty[idx];
-        _board[row, col] = _random.NextDouble() < 0.75 ? 2 : 4;
+        _board![row, col] = _random.NextDouble() < 0.75 ? 2 : 4;
 
-        // Уведомляем подписчиков о смене доски
         OnBoardChanged(GetBoardCopy());
 
-        // Если после генерации больше ходов нет — уведомим о конце игры
         if (IsGameOver())
             TriggerGameOver();
     }
@@ -130,15 +123,12 @@ public sealed class GameEngine
             }
         }
 
-        if (moved)
-        {
-            // Уведомляем, что доска изменилась (перед генерацией нового числа).
-            OnBoardChanged(GetBoardCopy());
+        if (!moved) return moved;
 
-            // Если нет возможных ходов — уведомим
-            if (IsGameOver())
-                TriggerGameOver();
-        }
+        OnBoardChanged(GetBoardCopy());
+
+        if (IsGameOver())
+            TriggerGameOver();
 
         return moved;
     }
@@ -179,7 +169,6 @@ public sealed class GameEngine
     public void Reset()
     {
         InitBoard();
-        // обнулим счёт (User.Score имеет public setter в вашей реализации)
         User.ResetScore();
         GenerateNumber();
         GenerateNumber();
@@ -195,13 +184,11 @@ public sealed class GameEngine
     {
         if (_board is null) return true;
 
-        // если есть пустая клетка — можно ходить
         for (var r = 0; r < MapSize; r++)
             for (var c = 0; c < MapSize; c++)
                 if (!_board[r, c].HasValue)
                     return false;
 
-        // если есть соседние равные — можно ходить
         for (var r = 0; r < MapSize; r++)
             for (var c = 0; c < MapSize; c++)
             {

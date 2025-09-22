@@ -21,19 +21,13 @@ namespace _2048WinFormsApp
             _game.BoardChanged += Game_BoardChanged;
             _game.ScoreChanged += Game_ScoreChanged;
             _game.GameOver += Game_GameOver;
-
-            //// разрешаем форме получать нажатия клавиш
-            //KeyPreview = true;
         }
 
         private void GameForm_Load(object sender, EventArgs e)
         {
             InitMap();
 
-            // отрисовать начальное состояние из движка
             UpdateUIFromBoard(_game.GetBoardCopy());
-
-            // показать начальный счёт
             ScoreLabel.Text = _game.User.Score.ToString();
         }
 
@@ -73,8 +67,6 @@ namespace _2048WinFormsApp
             bool moved = _game.Move(dir.Value);
             if (moved)
             {
-                // после успешного хода — сгенерировать новую плитку;
-                // GenerateNumber отправит событие BoardChanged и при необходимости GameOver.
                 _game.GenerateNumber();
             }
         }
@@ -107,7 +99,6 @@ namespace _2048WinFormsApp
 
         private void Game_GameOver(object? sender, GameOverEventArgs e)
         {
-            // В GUI-потоке покажем диалог и при желании перезапустим игру
             if (InvokeRequired)
             {
                 Invoke((Action)(() => HandleGameOver(e.FinalScore)));
@@ -132,12 +123,6 @@ namespace _2048WinFormsApp
             if (result == DialogResult.Yes)
             {
                 _game.Reset();
-                // Reset вызовет события BoardChanged и ScoreChanged — UI обновится автоматически.
-            }
-            else
-            {
-                // если пользователь не хочет рестарт — можно, например, заблокировать ввод
-                // или просто оставить всё как есть. Здесь ничего дополнительно не делаем.
             }
         }
 
@@ -154,7 +139,6 @@ namespace _2048WinFormsApp
                 }
         }
 
-        // Отписка от событий при закрытии формы
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);

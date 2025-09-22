@@ -12,7 +12,6 @@ public static class UsersResultStorage
     /// </summary>
     public static void Append(User user)
     {
-        // Создаём снимок текущего состояния User
         var record = new ResultRecord(
             user.Name,
             user.Score
@@ -62,33 +61,11 @@ public static class UsersResultStorage
             if (string.IsNullOrWhiteSpace(fileData))
                 return [];
 
-            // Пытаемся десериализовать как List<ResultRecord>
             var list = JsonConvert.DeserializeObject<List<ResultRecord>>(fileData);
-            if (list != null) return list;
-
-            //// На случай, если старый файл хранил List<User>, попробуем десериализовать как List<User>
-            //var oldList = JsonConvert.DeserializeObject<List<User>>(fileData);
-            //if (oldList != null)
-            //{
-            //    // Мигрируем старые записи в новый формат
-            //    var migrated = oldList.Select(u =>
-            //        new ResultRecord(
-            //            playerName: string.IsNullOrEmpty(u.Name) ? "Anonymous" : u.Name,
-            //            score: u.Score,
-            //            timestamp: DateTime.UtcNow)
-            //    ).ToList();
-
-            //    // Сохраним мигрированный список в новом формате
-            //    SaveInternal(migrated);
-            //    return migrated;
-            //}
-
-            //// Если десериализация не удалась — вернём пустой список
-            return [];
+            return list ?? [];
         }
         catch
         {
-            // В случае ошибок чтения/парсинга — вернём пустой список (без бросания исключений)
             return [];
         }
     }
