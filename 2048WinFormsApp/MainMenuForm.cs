@@ -4,30 +4,20 @@ namespace _2048WinFormsApp;
 
 public partial class MainMenuForm : Form
 {
-    private readonly PrivateFontCollection _fonts = new();
-
     public MainMenuForm()
     {
         InitializeComponent();
 
-        _fonts.AddFontFile(Path.Combine(Application.StartupPath, "FoglihtenBlackPcs.ttf"));
-        _fonts.AddFontFile(Path.Combine(Application.StartupPath, "Aladdin.ttf"));
-        _fonts.AddFontFile(Path.Combine(Application.StartupPath, "a_FuturaRound.ttf"));
+        GameNameLabel.Font = new Font(FontCollection.FoglihtenBlackPcs, 46);
+        UnderliningLabel.Font = new Font(FontCollection.FoglihtenBlackPcs, 10);
+        GameTextLabel.Font = new Font(FontCollection.FoglihtenBlackPcs, 13);
 
-        GameNameLabel.Font = new Font(_fonts.Families[2], 46);
-        UnderliningLabel.Font = new Font(_fonts.Families[2], 10);
-        GameTextLabel.Font = new Font(_fonts.Families[2], 13);
+        AuthorLabel.Font = new Font(FontCollection.Aladdin, 15);
 
-        AuthorLabel.Font = new Font(_fonts.Families[0], 15);
-
-        StartGameButton.Font = new Font(_fonts.Families[1], 14);
-        ShowRulesButton.Font = new Font(_fonts.Families[1], 10);
-        ShowUsersResultsButton.Font = new Font(_fonts.Families[1], 12);
-        QuitButton.Font = new Font(_fonts.Families[1], 12);
-    }
-
-    private void MainMenuForm_Load(object sender, EventArgs e)
-    {
+        StartGameButton.Font = new Font(FontCollection.AFuturaRound, 14);
+        ShowRulesButton.Font = new Font(FontCollection.AFuturaRound, 10);
+        ShowUsersResultsButton.Font = new Font(FontCollection.AFuturaRound, 12);
+        QuitButton.Font = new Font(FontCollection.AFuturaRound, 12);
     }
 
     private void StartGameButton_Click(object sender, EventArgs e)

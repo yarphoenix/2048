@@ -135,7 +135,6 @@
             Controls.Add(GameNameLabel);
             Name = "MainMenuForm";
             Text = "2048";
-            Load += MainMenuForm_Load;
             ResumeLayout(false);
             PerformLayout();
         }
