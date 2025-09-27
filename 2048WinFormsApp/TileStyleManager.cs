@@ -108,10 +108,10 @@ public static class TileStyleManager
         return len switch
         {
             <= 3 => baseSize,
-            4 => Math.Max(12f, baseSize - 2f),
-            5 => Math.Max(10f, baseSize - 4f),
-            6 => Math.Max(9f, baseSize - 6f),
-            _ => Math.Max(8f, baseSize - 8f)
+            4 => Math.Max(10f, baseSize - 2f),
+            5 => Math.Max(8f, baseSize - 4f),
+            6 => Math.Max(7f, baseSize - 6f),
+            _ => Math.Max(6f, baseSize - 8f)
         };
     }
 

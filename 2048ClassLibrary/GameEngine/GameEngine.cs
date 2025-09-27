@@ -2,11 +2,15 @@
 
 public sealed class GameEngine
 {
+    private static int WinValue => 2048;
+
     private readonly Random _random;
     private int?[,]? _board;
-    public User User { get; }
+    private bool _hasWon;
 
+    public User User { get; }
     public static int MapSize => 4;
+    public bool EndGameOnWin { get; set; } = false;
 
     public GameEngine()
     {
@@ -17,6 +21,8 @@ public sealed class GameEngine
         // Стандартно с двух плиток
         GenerateNumber();
         GenerateNumber();
+
+        _hasWon = false;
     }
 
     private void InitBoard()
@@ -120,6 +126,19 @@ public sealed class GameEngine
 
                 if (_board[r, c] != newLine[pos]) moved = true;
                 _board[r, c] = newLine[pos];
+
+                if (!_hasWon && _board[r, c].HasValue && _board[r, c]!.Value == WinValue)
+                {
+                    _hasWon = true;
+                    OnGameWon(new GameWonEventArgs(User.Score, WinValue, r, c));
+
+                    if (EndGameOnWin)
+                    {
+                        TriggerGameOver();
+                        // если EndGameOnWin == true, игра будет завершена
+                    }
+                    // если EndGameOnWin == false — движок лишь уведомил о победе, игра продолжается
+                }
             }
         }
 
@@ -170,12 +189,18 @@ public sealed class GameEngine
     {
         InitBoard();
         User.ResetScore();
+        _hasWon = false;
         GenerateNumber();
         GenerateNumber();
 
         OnScoreChanged(new ScoreChangedEventArgs(User.Score));
         OnBoardChanged(GetBoardCopy());
     }
+
+    /// <summary>
+    /// Позволяет внешнему коду форсировать завершение игры (вызовет SaveResults + событие GameOver).
+    /// </summary>
+    public void EndGame() => TriggerGameOver();
 
     /// <summary>
     /// Проверяет, закончилась ли игра.
@@ -210,13 +235,14 @@ public sealed class GameEngine
         {
             SaveResults();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // ignored
         }
 
         OnGameOver(new GameOverEventArgs(User.Score));
     }
+
     private void SaveResults()
     {
         UsersResultStorage.Append(User);
@@ -227,6 +253,7 @@ public sealed class GameEngine
     public event EventHandler<BoardChangedEventArgs>? BoardChanged;
     public event EventHandler<ScoreChangedEventArgs>? ScoreChanged;
     public event EventHandler<GameOverEventArgs>? GameOver;
+    public event EventHandler<GameWonEventArgs>? GameWon;
 
     private void OnBoardChanged(int?[,] board)
     {
@@ -243,6 +270,12 @@ public sealed class GameEngine
     private void OnGameOver(GameOverEventArgs args)
     {
         var handler = GameOver;
+        handler?.Invoke(this, args);
+    }
+
+    private void OnGameWon(GameWonEventArgs args)
+    {
+        var handler = GameWon;
         handler?.Invoke(this, args);
     }
 

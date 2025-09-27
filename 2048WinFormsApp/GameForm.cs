@@ -21,6 +21,7 @@ namespace _2048WinFormsApp
             _game.BoardChanged += Game_BoardChanged;
             _game.ScoreChanged += Game_ScoreChanged;
             _game.GameOver += Game_GameOver;
+            _game.GameWon += Game_GameWon;
         }
 
         private void GameForm_Load(object sender, EventArgs e)
@@ -49,6 +50,17 @@ namespace _2048WinFormsApp
                     Controls.Add(lbl);
                     _labelsMap[r, c] = lbl;
                 }
+        }
+
+        private void UpdateUIFromBoard(int?[,] board)
+        {
+            for (var r = 0; r < GameEngine.MapSize; r++)
+            for (var c = 0; c < GameEngine.MapSize; c++)
+            {
+                int? val = board[r, c];
+                var lbl = _labelsMap[r, c];
+                TileStyleManager.ApplyStyle(lbl, val, ScoreLabel.Font);
+            }
         }
 
         private void GameForm_KeyDown(object sender, KeyEventArgs e)
@@ -101,19 +113,19 @@ namespace _2048WinFormsApp
         {
             if (InvokeRequired)
             {
-                Invoke((Action)(() => HandleGameOver(e.FinalScore)));
+                Invoke((Action)(() => HandleGameOver(e)));
             }
             else
             {
-                HandleGameOver(e.FinalScore);
+                HandleGameOver(e);
             }
         }
 
-        private void HandleGameOver(int finalScore)
+        private void HandleGameOver(GameOverEventArgs e)
         {
             var result = MessageBox.Show(
                 $"""
-                 Игра окончена! Счёт: {finalScore}
+                 Игра окончена! Счёт: {e.FinalScore}
                  Хотите начать заново?
                  """,
                 @"Game Over",
@@ -126,18 +138,39 @@ namespace _2048WinFormsApp
             }
         }
 
-        #endregion
-
-        private void UpdateUIFromBoard(int?[,] board)
+        private void Game_GameWon(object? sender, GameWonEventArgs e)
         {
-            for (var r = 0; r < GameEngine.MapSize; r++)
-                for (var c = 0; c < GameEngine.MapSize; c++)
-                {
-                    int? val = board[r, c];
-                    var lbl = _labelsMap[r, c];
-                    TileStyleManager.ApplyStyle(lbl, val, ScoreLabel.Font);
-                }
+            if (InvokeRequired)
+            {
+                Invoke((Action)(() => HandleGameWon(e)));
+            }
+            else
+            {
+                HandleGameWon(e);
+            }
         }
+
+        private void HandleGameWon(GameWonEventArgs e)
+        {
+            var result = MessageBox.Show(
+                $"Поздравляем — плитка {e.Value} получена! Счёт: {e.Score}\n\nПродолжить игру?",
+                "You win!",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.No)
+            {
+                // Если игрок хочет закончить игру — попросим движок завершиться (сохранение + событие GameOver)
+                _game.EndGame();
+            }
+            else
+            {
+                // Игрок продолжил — ничего делать не нужно, игра идёт дальше.
+                // Если хочешь, можно разрешить продолжение и/или снять _hasWon (но обычно сохраняют флаг).
+            }
+        }
+
+        #endregion
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
@@ -146,6 +179,7 @@ namespace _2048WinFormsApp
             _game.BoardChanged -= Game_BoardChanged;
             _game.ScoreChanged -= Game_ScoreChanged;
             _game.GameOver -= Game_GameOver;
+            _game.GameWon -= Game_GameWon;
         }
     }
 }
