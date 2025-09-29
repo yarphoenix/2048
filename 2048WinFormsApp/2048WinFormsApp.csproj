@@ -36,22 +36,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Aladdin.ttf">
+    <None Update="Fonts\Aladdin.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="a_FuturaRound Bold.ttf">
+    <None Update="Fonts\a_FuturaRound Bold.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="a_FuturaRound BoldItalic.ttf">
+    <None Update="Fonts\a_FuturaRound BoldItalic.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="a_FuturaRound Italic.ttf">
+    <None Update="Fonts\a_FuturaRound Italic.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="a_FuturaRound.ttf">
+    <None Update="Fonts\a_FuturaRound.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="FoglihtenBlackPcs.ttf">
+    <None Update="Fonts\FoglihtenBlackPcs.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Properties\Settings.settings">
