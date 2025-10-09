@@ -132,9 +132,14 @@ namespace _2048WinFormsApp
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
-            if (result == DialogResult.Yes)
+            switch (result)
             {
-                _game.Reset();
+                case DialogResult.Yes:
+                    _game.Reset();
+                    break;
+                case DialogResult.No:
+                    Application.Restart();
+                    break;
             }
         }
 
@@ -160,13 +165,11 @@ namespace _2048WinFormsApp
 
             if (result == DialogResult.No)
             {
-                // Если игрок хочет закончить игру — попросим движок завершиться (сохранение + событие GameOver)
                 _game.EndGame();
             }
             else
             {
-                // Игрок продолжил — ничего делать не нужно, игра идёт дальше.
-                // Если хочешь, можно разрешить продолжение и/или снять _hasWon (но обычно сохраняют флаг).
+                Application.Restart();
             }
         }
 
